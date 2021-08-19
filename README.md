@@ -1,8 +1,8 @@
-## Cards
+# Cards
 
 A web-based tool for determining which credit cards provide the best return on investment based on the user's spending habits.
 
-### [Try it here!](https://cubified.github.io/cards/build)
+### [Try it here!](https://cubified.github.io/cards)
 
 ### Screenshots
 
