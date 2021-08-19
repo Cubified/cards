@@ -4,10 +4,30 @@
 
 html, body {
   background: #fafafa;
+  min-height: 100vh;
+}
+
+input:checked ~ svg {
+  color: gray !important;
 }
 
 .optionsBox {
   width: 50%;
+}
+
+.spend-Input {
+  margin: 0;
+  display: block;
+  width: 100%;
+  padding: 8px;
+  box-sizing: border-box;
+  appearance: none;
+  font-size: inherit;
+  line-height: inherit;
+  color: black;
+  background-color: white;
+  border: 1px solid;
+  border-radius: 4px;
 }
 
 .cardListing {

@@ -1,15 +1,13 @@
-/*global event*/
 /*eslint no-restricted-globals: 0*/
 
 import React from 'react';
 import './App.css';
-import {Flex, Box, Heading, Label, Select, Field, Checkbox, Button} from 'theme-ui';
+import {Flex, Box, Heading, Label, Select, Checkbox, Button} from 'theme-ui';
+import CurrencyInput from 'react-currency-input-field';
+import {formatValue} from 'react-currency-input-field';
 import cards from './cards';
 
 class Card extends React.Component {
-  constructor(props){
-    super(props);
-  }
   render(){
     if(this.props.card === undefined) return (<div></div>);
     return (
@@ -21,7 +19,7 @@ class Card extends React.Component {
         </Flex>
         <Flex pt={4} style={{alignItems:"center", justifyContent:"center", flexWrap:"wrap", width:"100vw", textAlign:"center"}}>
           <div>
-            <img src={this.props.card['Image']} style={{boxShadow:"0 10px 20px rgba(0, 0, 0, 0.2)", width:"400px"}} />
+            <img alt={this.props.card['Name']} src={this.props.card['Image']} style={{boxShadow:"0 10px 20px rgba(0, 0, 0, 0.2)", width:"400px"}} />
             <br />
             <br />
             <Heading as="h3" style={{fontWeight:"100"}}>{ this.props.card['Issuer'] }</Heading>
@@ -91,7 +89,7 @@ class Card extends React.Component {
               <hr />
               <br />
               <Box style={{textAlign:"center"}}>
-                <Heading style={{fontSize:"24pt"}}>{this.props.roi < 0 ? '-$'+(-this.props.roi).toFixed(2) : '$'+this.props.roi.toFixed(2)}</Heading>
+                <Heading style={{fontSize:"24pt"}}>{formatValue({value:this.props.roi.toFixed(2), prefix:'$', decimalScale:2})}</Heading>
                 <Heading as="h5">Est. annual return</Heading>
               </Box>
               { (this.props.card['Notes'].trim() !== '') ? 
@@ -102,6 +100,10 @@ class Card extends React.Component {
                   </Box></div>) :
                 (<div></div>)
               }
+              <br />
+              <a href={this.props.card['Link']}>
+                <Button style={{cursor:"pointer"}}>Learn more</Button>
+              </a>
             </Box>
           </div>
         </Flex>
@@ -112,9 +114,6 @@ class Card extends React.Component {
 }
 
 class Results extends React.Component {
-  constructor(props){
-    super(props);
-  }
   roi(card){
     let roi = (
       parseInt(this.props.options.dining)    * card['Dining']    +
@@ -128,15 +127,6 @@ class Results extends React.Component {
   compute(){
     let presort = [];
     cards.forEach((card)=>{
-      let hit = 0;
-      /*
-      if(card['Type'] === this.props.options.type) hit++;
-      if(parseInt(card['Credit']) <= this.props.options.credit) hit++;
-      if(parseInt(card['Fee']) === 0 && !this.props.options.fee) hit++;
-      if(card['TSA'] === 'Yes' && this.props.options.tsa) hit++;
-      
-      if(presort[hit] === undefined) presort[hit] = [card];
-      else presort[hit].push(card);*/
       if((this.props.options.type === 'All' ? true : (card['Type'] === this.props.options.type)) &&
          parseInt(this.props.options.credit) >= card['Credit'] &&
          (this.props.options.fee ? (card['Fee'] === 0) : true) &&
@@ -163,55 +153,20 @@ class Results extends React.Component {
               roib = this.roi(b);
           return (roib - roia);
         });
-        /*
-        out.push((
-          <Box key={Math.random()*1000} p={2} style={{fontWeight:'bold'}}>Cards that matched {ind} of your criteria:</Box>
-        ));*/
         presort[ind].forEach((card, cidx)=>{
           let roi = this.roi(card);
           if(roi < 0 && !this.props.options.negative) return;
-          /*
-          out.push((
-            <Flex key={Math.random()*1000} p={2} className="cardListing" onClick={()=>{this.props.view_listing(card)}}>
-              <img src={card['Image']} className="cardListing-Image"/>
-              <Box key={Math.random()*1000} p={2} className="cardListing-Name">
-                <Heading as="h3">{card['Issuer']}</Heading>
-                <Heading>{card['Name']}</Heading>
-              </Box>
-              <Box pr={2}>
-                <Heading>${card['Fee']}</Heading>
-                <Heading as="h5">Annual Fee</Heading>
-              </Box>
-              <Box pr={2}>
-                <Heading>{card['Type']}</Heading>
-                <Heading as="h5">Card type</Heading>
-              </Box>
-              <Box pr={2}>
-                <Heading>{card['Credit']}</Heading>
-                <Heading as="h5">Min. credit score</Heading>
-              </Box>
-              <Box pr={2}>
-                <Heading>{card['TSA']}</Heading>
-                <Heading as="h5">TSA PreCheck credit?</Heading>
-              </Box>
-              <Box pr={2} className="cardListing-ROI">
-                <Heading>{roi < 0 ? '-$'+(-roi).toFixed(2) : '$'+roi.toFixed(2)}</Heading>
-                <Heading as="h5">Est. annual return</Heading>
-              </Box>
-            </Flex>
-          ));
-          */
           out.push((
             <Flex key={card['Name']} p={4} m={4} className="cardListing" onClick={()=>{this.props.view_listing(card, roi)}}>
               <Flex className="cardListing-Container">
-                <img src={card['Image']} className="cardListing-Image" />
+                <img alt={card['Name']} src={card['Image']} className="cardListing-Image" />
                 <Box pl={4} className="cardListing-Name">
                   <Heading as="h3">{card['Issuer']}</Heading>
                   <Heading>{card['Name']}</Heading>
                 </Box>
               </Flex>
               <Box mt={2} className="cardListing-ROI">
-                <Heading>{roi < 0 ? '-$'+(-roi).toFixed(2) : '$'+roi.toFixed(2)}</Heading>
+                <Heading>{formatValue({value:roi.toFixed(2), prefix:'$', decimalScale:2})}</Heading>
                 <Heading as="h5">Est. annual return</Heading>
               </Box>
             </Flex>
@@ -260,9 +215,12 @@ export default class App extends React.Component {
       gas: 100,
       groceries: 100,
       travel: 100,
-      other: 100
+      other: 100,
+
+      keypress: true
     };
     this.set_view = this.set_view.bind(this);
+    this.update_value_if_mobile = this.update_value_if_mobile.bind(this);
     location.hash = 0;
     window.onhashchange = ()=>{
       this.setState({
@@ -279,6 +237,26 @@ export default class App extends React.Component {
     window.scrollTo(0, 0);
     location.hash = view;
   }
+  update_value_if_mobile(e){
+    /* Hacky and bad, but it's the best that can be done given React breaking
+     *   <input type="number" /> on mobile
+     */
+    if(/Android|iPhone|iPad/i.test(navigator.userAgent) && this.state.keypress){
+      if(e.key === 'Backspace'){
+        e.target.value = e.target.value.substring(0, e.target.value.length-1);
+      } else if(!isNaN(parseInt(e.key))){
+        e.target.value += e.key;
+      }
+      this.setState({
+        keypress: false
+      });
+      setTimeout(()=>{
+        this.setState({
+          keypress: true
+        });
+      }, 100);
+    }
+  }
   render(){
     return (
       <div className="App">
@@ -290,14 +268,44 @@ export default class App extends React.Component {
         <Flex style={{width:"100vw", height:"90vh", flexWrap:"wrap", display:this.state.view===0?'flex':'none'}}>
           <Box p={4} color="white" bg="primary" className="optionsBox">
             <Label variant="primary">I'm looking for:</Label>
-            <Select color="black" value={this.state.type} onChange={(e)=>{this.setState({type:e.target.value});}}>
+            <Select arrow={
+              <Box
+                as="svg"
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="black"
+                sx={{
+                  ml: -28,
+                  alignSelf: 'center',
+                  pointerEvents: 'none',
+                }}>
+                <path d="M7.41 7.84l4.59 4.58 4.59-4.58 1.41 1.41-6 6-6-6z" />
+              </Box>
+            } color="black" value={this.state.type} onChange={(e)=>{this.setState({type:e.target.value});}}>
               <option value="All">All cards</option>
               <option value="Travel">Travel cards</option>
               <option value="Cash back">Cash back cards</option>
             </Select>
             <br />
             <Label variant="primary">With credit range:</Label>
-            <Select color="black" value={this.state.credit} onChange={(e)=>{this.setState({credit:e.target.value});}}>
+            <Select arrow={
+              <Box
+                as="svg"
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="black"
+                sx={{
+                  ml: -28,
+                  alignSelf: 'center',
+                  pointerEvents: 'none',
+                }}>
+                <path d="M7.41 7.84l4.59 4.58 4.59-4.58 1.41 1.41-6 6-6-6z" />
+              </Box>
+            } color="black" value={this.state.credit} onChange={(e)=>{this.setState({credit:e.target.value});}}>
               <option value={800}>Excellent (800-850)</option>
               <option value={740}>Very good (740-800)</option>
               <option value={670}>Good (670-740)</option>
@@ -306,45 +314,65 @@ export default class App extends React.Component {
             </Select>
             <br />
             <Label variant="primary">And features:</Label>
-            <Label variant="primary">
-              <Checkbox variant="primary" checked={this.state.fee} onChange={(e)=>{this.setState({fee:e.target.checked});}}/>
+            <Label>
+              <Checkbox checked={this.state.fee} onChange={(e)=>{this.setState({fee:e.target.checked});}}/>
               No annual fee
             </Label>
-            <Label variant="primary">
-              <Checkbox variant="primary" checked={this.state.tsa} onChange={(e)=>{this.setState({tsa:e.target.checked});}}/>
+            <Label>
+              <Checkbox checked={this.state.tsa} onChange={(e)=>{this.setState({tsa:e.target.checked});}}/>
               TSA PreCheck credit
             </Label>
-            <Label variant="primary">
-              <Checkbox variant="primary" checked={this.state.insurance} onChange={(e)=>{this.setState({insurance:e.target.checked});}}/>
+            <Label>
+              <Checkbox checked={this.state.insurance} onChange={(e)=>{this.setState({insurance:e.target.checked});}}/>
               Provides travel insurance
             </Label>
-            <Label variant="primary">
-              <Checkbox variant="primary" checked={this.state.custom} onChange={(e)=>{this.setState({custom:e.target.checked});}}/>
+            <Label>
+              <Checkbox checked={this.state.custom} onChange={(e)=>{this.setState({custom:e.target.checked});}}/>
               Rotating/custom reward amounts
             </Label>
-            <Label variant="primary">
-              <Checkbox variant="primary" checked={this.state.builder} onChange={(e)=>{this.setState({builder:e.target.checked});}}/>
+            <Label>
+              <Checkbox checked={this.state.builder} onChange={(e)=>{this.setState({builder:e.target.checked});}}/>
               Designed to build credit
             </Label>
             <br />
             <Label variant="primary">Other options:</Label>
-            <Label variant="primary">
-              <Checkbox variant="primary" checked={this.state.negative} onChange={(e)=>{this.setState({negative:e.target.checked});}}/>
+            <Label>
+              <Checkbox checked={this.state.negative} onChange={(e)=>{this.setState({negative:e.target.checked});}}/>
               Include cards with negative estimated returns
             </Label>
           </Box>
           <Box p={4} color="white" bg="secondary" className="optionsBox">
             <Label variant="primary">And with:</Label>
-            <Select color="black" onChange={(e)=>{this.setState({spend:e.target.value});}}>
+            <Select arrow={
+              <Box
+                as="svg"
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="black"
+                sx={{
+                  ml: -28,
+                  alignSelf: 'center',
+                  pointerEvents: 'none',
+                }}>
+                <path d="M7.41 7.84l4.59 4.58 4.59-4.58 1.41 1.41-6 6-6-6z" />
+              </Box>
+            } color="black" onChange={(e)=>{this.setState({spend:e.target.value});}}>
               <option value={12}>Monthly spend</option>
               <option value={1}>Annual spend</option>
             </Select>
             <br />
-            <Field label="On dining:" name="dining" type="number" value={this.state.dining} onChange={(e)=>{this.setState({dining:e.target.value});}} />
-            <Field label="On gas:" name="gas" type="number" value={this.state.gas} onChange={(e)=>{this.setState({gas:e.target.value});}} />
-            <Field label="On groceries:" name="groceries" type="number" value={this.state.groceries} onChange={(e)=>{this.setState({groceries:e.target.value});}} />
-            <Field label="On travel:" name="travel" type="number" value={this.state.travel} onChange={(e)=>{this.setState({travel:e.target.value});}} />
-            <Field label="On other:" name="other" type="number" value={this.state.other} onChange={(e)=>{this.setState({other:e.target.value});}} />
+            <Label variant="primary">On dining:</Label>
+            <CurrencyInput className="spend-Input" id="dining" name="dining" defaultValue={100} prefix="$" allowNegativeValue={false} allowDecimals={false} onKeyDown={this.update_value_if_mobile} onValueChange={(dining)=>{if(dining===undefined){this.setState({dining:0});} else this.setState({dining});}} />
+            <Label variant="primary">On gas:</Label>
+            <CurrencyInput className="spend-Input" id="gas" name="gas" defaultValue={100} prefix="$" allowNegativeValue={false} allowDecimals={false} onKeyDown={this.update_value_if_mobile} onValueChange={(gas)=>{if(gas===undefined){this.setState({gas:0});} else this.setState({gas});}} />
+            <Label variant="primary">On groceries:</Label>
+            <CurrencyInput className="spend-Input" id="groceries" name="groceries" defaultValue={100} prefix="$" allowNegativeValue={false} allowDecimals={false} onKeyDown={this.update_value_if_mobile} onValueChange={(groceries)=>{if(groceries===undefined){this.setState({groceries:0});} else this.setState({groceries});}} />
+            <Label variant="primary">On travel:</Label>
+            <CurrencyInput className="spend-Input" id="travel" name="travel" defaultValue={100} prefix="$" allowNegativeValue={false} allowDecimals={false} onKeyDown={this.update_value_if_mobile} onValueChange={(travel)=>{if(travel===undefined){this.setState({travel:0});} else this.setState({travel});}} />
+            <Label variant="primary">On other:</Label>
+            <CurrencyInput className="spend-Input" id="other" name="other" defaultValue={100} prefix="$" allowNegativeValue={false} allowDecimals={false} onKeyDown={this.update_value_if_mobile} onValueChange={(other)=>{if(other===undefined){this.setState({other:0});} else this.setState({other});}} />
           </Box>
           <Flex p={4} bg="highlight" style={{width:"100%", alignItems:"center", justifyContent:"center", textAlign:"center", color:"black", fontWeight:"bold"}}>
             <Button style={{cursor:"pointer"}} onClick={()=>{this.set_view(1)}}>Go</Button>
