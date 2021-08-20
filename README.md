@@ -35,8 +35,13 @@ And to build for production:
 
 ### Dataset
 
-The [dataset](https://github.com/Cubified/cards/blob/main/src/cards.csv) used by `cards` was collected by hand from a variety of credit card issuers' websites, as well as from roundup sites such as [creditcards.com](https://creditcards.com) or [NerdWallet](https://nerdwallet.com).
+The [dataset](https://github.com/Cubified/cards/blob/main/src/cards.csv) used by `cards` was collected by hand from a variety of credit card issuers' websites, as well as from roundup sites such as [CreditCards.com](https://creditcards.com) and [NerdWallet](https://nerdwallet.com).
 
-As a result, the accuracy of `cards`' return on investment calculation is an estimate, and assumes a) that all expenses listed in the "Spend" category are put onto the current card, and b) that all travel purchases are booked through the card issuer's portal if required to maximize return (e.g. most Chase cards)
+As a result, the accuracy of `cards`' return on investment calculation is an estimate, and assumes a few things:
 
-Additionally, `cards` does not yet have support for rotating/custom cash back categories, such as the Discover It Cash Back or Bank of America Custom Cash.  As a result, estimates for these cards will be lower than in reality.
+  1. All expenses listed in the "Spend" category are put onto the current card
+  2. All travel purchases are booked through the card issuer's portal if required to maximize return (e.g. most Chase cards)
+  3. All points/cash back are redeemed in whatever way most closely resembles 1 point-per-dollar -- many cards increase/decrease this conversion rate depending on how points are redeemed (i.e. for travel specifically vs. for a statement credit), but `cards` does not yet track this data
+  4. Any outstanding balances are paid in full every billing cycle (because running a balance defeats the purpose of rewards cards)
+
+Additionally, `cards` does not yet have support for rotating/custom cash back categories (such as the Discover It Cash Back or Bank of America Custom Cash) or welcome/good behavior bonuses.  As a result, estimates for cards with these features will be lower than in reality.

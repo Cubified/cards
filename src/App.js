@@ -5,9 +5,17 @@ import './App.css';
 import {Flex, Box, Heading, Label, Select, Checkbox, Button} from 'theme-ui';
 import CurrencyInput from 'react-currency-input-field';
 import {formatValue} from 'react-currency-input-field';
+import ReactTooltip from 'react-tooltip';
 import cards from './cards';
 
 class Card extends React.Component {
+  determine_credit_range(val){
+    if(val <= 580) return 'Poor/Limited History';
+    if(val <= 670) return 'Fair';
+    if(val <= 740) return 'Good';
+    if(val <= 800) return 'Very Good';
+    return 'Excellent';
+  }
   render(){
     if(this.props.card === undefined) return (<div></div>);
     return (
@@ -31,7 +39,7 @@ class Card extends React.Component {
                   <Heading>${ this.props.card['Fee'] }</Heading>
                   <Heading as="h5">Annual Fee</Heading>
                 </Box>
-                <Box style={{textAlign:"center", flexGrow:"1"}}>
+                <Box style={{textAlign:"center", flexGrow:"1"}} data-tip={this.determine_credit_range(this.props.card['Credit'])}>
                   <Heading>{ this.props.card['Credit'] }</Heading>
                   <Heading as="h5">Min. Credit Score</Heading>
                 </Box>
@@ -42,34 +50,35 @@ class Card extends React.Component {
               </Flex>
               <br />
               <Flex>
-                <Box style={{textAlign:"left", width:"25%"}}>
+                <Box style={{textAlign:"left", width:"25%"}} data-tip={'$'+this.props.options.dining + ' * ' + this.props.card['Dining'] + ' = $' + (parseInt(this.props.options.dining)*this.props.card['Dining']*this.props.card['Conversion']).toFixed(2)}>
                   <Heading>{ (this.props.card['Dining'] < 1) ? ((this.props.card['Dining']*100)+'%') : (this.props.card['Dining']+'x') }</Heading>
                   <Heading as="h5">Dining</Heading>
                 </Box>
-                <Box style={{textAlign:"center", flexGrow:"1"}}>
+                <Box style={{textAlign:"center", flexGrow:"1"}} data-tip={'$'+this.props.options.gas + ' * ' + this.props.card['Gas'] + ' = $' + (parseInt(this.props.options.gas)*this.props.card['Gas']*this.props.card['Conversion']).toFixed(2)}>
                   <Heading>{ (this.props.card['Gas'] < 1) ? ((this.props.card['Gas']*100)+'%') : (this.props.card['Gas']+'x') }</Heading>
                   <Heading as="h5">Gas</Heading>
                 </Box>
-                <Box style={{textAlign:"right", width:"25%"}}>
+                <Box style={{textAlign:"right", width:"25%"}} data-tip={'$'+this.props.options.groceries + ' * ' + this.props.card['Groceries'] + ' = $' + (parseInt(this.props.options.groceries)*this.props.card['Groceries']*this.props.card['Conversion']).toFixed(2)}>
                   <Heading>{ (this.props.card['Groceries'] < 1) ? ((this.props.card['Groceries']*100)+'%') : (this.props.card['Groceries']+'x') }</Heading>
                   <Heading as="h5">Groceries</Heading>
                 </Box>
               </Flex>
               <br />
               <Flex>
-                <Box style={{textAlign:"left", width:"25%"}}>
+                <Box style={{textAlign:"left", width:"25%"}} data-tip={'$'+this.props.options.travel + ' * ' + this.props.card['Travel'] + ' = $' + (parseInt(this.props.options.travel)*this.props.card['Travel']*this.props.card['Conversion']).toFixed(2)}>
                   <Heading>{ (this.props.card['Travel'] < 1) ? ((this.props.card['Travel']*100)+'%') : (this.props.card['Travel']+'x') }</Heading>
                   <Heading as="h5">Travel</Heading>
                 </Box>
-                <Box style={{textAlign:"center", flexGrow:"1"}}>
+                <Box style={{textAlign:"center", flexGrow:"1"}} data-tip={'$'+this.props.options.online + ' * ' + this.props.card['Online'] + ' = $' + (parseInt(this.props.options.online)*this.props.card['Online']*this.props.card['Conversion']).toFixed(2)}>
                   <Heading>{ (this.props.card['Online'] < 1) ? ((this.props.card['Online']*100)+'%') : (this.props.card['Online']+'x') }</Heading>
                   <Heading as="h5">Online</Heading>
                 </Box>
-                <Box style={{textAlign:"right", width:"25%"}}>
+                <Box style={{textAlign:"right", width:"25%"}} data-tip={'$'+this.props.options.other + ' * ' + this.props.card['All'] + ' = $' + (parseInt(this.props.options.other)*this.props.card['All']*this.props.card['Conversion']).toFixed(2)}>
                   <Heading>{ (this.props.card['All'] < 1) ? ((this.props.card['All']*100)+'%') : (this.props.card['All']+'x') }</Heading>
-                  <Heading as="h5">All</Heading>
+                  <Heading as="h5">Other</Heading>
                 </Box>
               </Flex>
+              <ReactTooltip place="top" type="dark" effect="solid" />
               <br />
               <Flex>
                 <Box style={{textAlign:"left", width:"25%"}}>
@@ -120,6 +129,7 @@ class Results extends React.Component {
       parseInt(this.props.options.gas)       * card['Gas']       +
       parseInt(this.props.options.groceries) * card['Groceries'] +
       parseInt(this.props.options.travel)    * card['Travel']    +
+      parseInt(this.props.options.online)    * card['Online']    +
       parseInt(this.props.options.other)     * card['All']
     );
     return (roi * card['Conversion'] * this.props.options.spend) - card['Fee'];
@@ -197,7 +207,7 @@ export default class App extends React.Component {
   constructor(props){
     super(props);
     this.state = {
-      view: 0,
+      view: 2,
       card: cards[0],
       roi: 0,
 
@@ -215,6 +225,7 @@ export default class App extends React.Component {
       gas: 100,
       groceries: 100,
       travel: 100,
+      online: 100,
       other: 100,
 
       keypress: true
@@ -371,6 +382,8 @@ export default class App extends React.Component {
             <CurrencyInput className="spend-Input" id="groceries" name="groceries" defaultValue={100} prefix="$" allowNegativeValue={false} allowDecimals={false} onKeyDown={this.update_value_if_mobile} onValueChange={(groceries)=>{if(groceries===undefined){this.setState({groceries:0});} else this.setState({groceries});}} />
             <Label variant="primary">On travel:</Label>
             <CurrencyInput className="spend-Input" id="travel" name="travel" defaultValue={100} prefix="$" allowNegativeValue={false} allowDecimals={false} onKeyDown={this.update_value_if_mobile} onValueChange={(travel)=>{if(travel===undefined){this.setState({travel:0});} else this.setState({travel});}} />
+            <Label variant="primary">On online shopping:</Label>
+            <CurrencyInput className="spend-Input" id="online" name="online" defaultValue={100} prefix="$" allowNegativeValue={false} allowDecimals={false} onKeyDown={this.update_value_if_mobile} onValueChange={(online)=>{if(online===undefined){this.setState({online:0});} else this.setState({online});}} />
             <Label variant="primary">On other:</Label>
             <CurrencyInput className="spend-Input" id="other" name="other" defaultValue={100} prefix="$" allowNegativeValue={false} allowDecimals={false} onKeyDown={this.update_value_if_mobile} onValueChange={(other)=>{if(other===undefined){this.setState({other:0});} else this.setState({other});}} />
           </Box>
@@ -379,7 +392,7 @@ export default class App extends React.Component {
           </Flex>
         </Flex>
         <Results visible={this.state.view===1} hide={()=>{this.set_view(0)}} view_listing={(card, roi)=>{this.set_view(2, card, roi)}} options={this.state} />
-        <Card visible={this.state.view===2} hide={()=>{this.set_view(1)}} card={this.state.card} roi={this.state.roi} />
+        <Card visible={this.state.view===2} hide={()=>{this.set_view(1)}} card={this.state.card} roi={this.state.roi} options={this.state} />
       </div>
     );
   }
