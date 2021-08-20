@@ -207,7 +207,7 @@ export default class App extends React.Component {
   constructor(props){
     super(props);
     this.state = {
-      view: 2,
+      view: 0,
       card: cards[0],
       roi: 0,
 
